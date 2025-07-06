@@ -19,7 +19,7 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 
 ## 📸 Screenshot
 
-![UACT Screenshot](docs/screenshot.png)
+![UACT Screenshot](screenshot.png)
 
 ## 🖼️ Built with
 
