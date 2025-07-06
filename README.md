@@ -17,6 +17,9 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 - Root Tools/Manegement
 - Build.prop Viewer/Editor (need to update)
 
+## 📸 Screenshot
+
+![UACT Screenshot](docs/screenshot.png)
 
 ## 🖼️ Built with
 
