@@ -9,9 +9,13 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 - File Explorer (local ↔ device)
 - APK installation and app management
 - Logcat viewer
+- Root Management
 - Backup and restore
 - ADB over WiFi
-
+- Flash via Fastboot
+- Install zip via Sideload
+- Root Tools/Manegement
+- Build.prop Viewer/Editor (need to update)
 
 
 ## 🖼️ Built with
@@ -37,6 +41,7 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
+## Go to settings first and set phat to adb.exe and fastboot.exe !!!
 
 ## 📦 Requirements
 
