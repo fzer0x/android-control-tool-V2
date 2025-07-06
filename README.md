@@ -32,7 +32,7 @@ Android 4.0 to 14
 ## 🚀 Installation
 
 1. Make sure `adb` and `fastboot` are available in your system PATH.
-2. Install Python 3.9+
+2. Install Python 3.11
 3. Install dependencies:
 
 ```bash
