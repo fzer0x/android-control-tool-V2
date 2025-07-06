@@ -45,6 +45,8 @@ pip install -r requirements.txt
 python main.py
 ```
 ## Go to settings first and set phat to adb.exe and fastboot.exe !!!
+Knowing Bug: When tool starts, you get 2 incorrect error messages that the device is not recognized.
+Ignore and Press 2x OK! It will be fixed in next Update!
 
 ## 📦 Requirements
 
