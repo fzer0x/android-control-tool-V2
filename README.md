@@ -39,7 +39,7 @@ Android 4.0 to 14
 pip install -r requirements.txt
 ```
 
-4. Run the tool:
+4. Run UACT:
 
 ```bash
 python main.py
