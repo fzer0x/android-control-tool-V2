@@ -12,6 +12,8 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 - Backup and restore
 - ADB over WiFi
 
+
+
 ## 🖼️ Built with
 
 - PyQt6
@@ -50,7 +52,7 @@ packaging
 
 ## ⚠️ Note
 
-This tool interacts directly with your Android device. USB debugging must be enabled and the ADB connection authorized on the device.
+This tool interacts directly with your Android device (Wifi/USB). USB debugging must be enabled and the ADB connection authorized on the device.
 
 ## 📜 License
 
