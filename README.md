@@ -14,7 +14,7 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 - ADB over WiFi
 - Flash via Fastboot
 - Install zip via Sideload
-- Root Tools/Manegement
+- Root Tools/Management
 - Build.prop Viewer/Editor (need to update)
 
 ## 📸 Screenshot
