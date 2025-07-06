@@ -48,7 +48,7 @@ python main.py
 - When tool starts, you get 2 incorrect error messages that the device is not recognized.
 Ignore and Press 2x OK! It will be fixed in next Update!
 
-- Build.prop viewer maybe not work
+- Build.prop viewer maybe not work with all devices
 
 ## 📦 Requirements
 
