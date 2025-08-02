@@ -2,6 +2,8 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
+## UPDATE AVAILABLE V1.0.1
+
 ## 🧩 Features
 
 - Device detection (ADB / Fastboot)
