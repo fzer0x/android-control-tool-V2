@@ -31,7 +31,7 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 
 ## 🧪 Supported Android Versions
 
-Android 4.0 to 14
+Android 4.0 to 16+
 
 ## 🚀 Installation
 
