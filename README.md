@@ -1,5 +1,13 @@
 # Android Control Tool V2 (ACT)
 
+# Android Device Manager (Python Tool)
+
+A cross-platform PC tool for controlling, managing, and automating Android devices — built in **Python** with **ADB** integration.
+
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![Platform](https://img.shields.io/badge/Platform-Android-green)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+
 A powerful Python GUI tool to manage and control rooted Android devices via ADB and Fastboot.
 
 ### 💥MEGA UPDATE V2.0.0💥
