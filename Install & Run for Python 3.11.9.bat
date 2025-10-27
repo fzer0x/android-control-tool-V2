@@ -69,6 +69,42 @@ if %errorlevel% neq 0 (
     goto :error_exit
 )
 
+REM --- Auto-Update fuer main.py ---
+echo [INFO] Versuche, die neueste 'main.py' von GitHub herunterzuladen...
+set "MAIN_PY_URL=https://raw.githubusercontent.com/fzer0x/android-control-tool-V2/main/main.py"
+set "TEMP_FILE=main.py.tmp"
+
+REM Versuche es mit curl, das in modernen Windows-Versionen enthalten ist
+curl --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [INFO] Verwende 'curl' fuer den Download.
+    curl -L -s -f -o "%TEMP_FILE%" "%MAIN_PY_URL%"
+    if %errorlevel% neq 0 (
+        echo [WARN] Download mit curl fehlgeschlagen. Ueberspringe Update.
+        if exist "%TEMP_FILE%" del "%TEMP_FILE%"
+        goto :skip_update
+    )
+) else (
+    echo [WARN] 'curl' nicht gefunden. Versuche es mit PowerShell.
+    powershell -Command "(New-Object Net.WebClient).DownloadFile('%MAIN_PY_URL%', '%TEMP_FILE%')"
+    if %errorlevel% neq 0 (
+        echo [WARN] Download mit PowerShell fehlgeschlagen. Ueberspringe Update.
+        if exist "%TEMP_FILE%" del "%TEMP_FILE%"
+        goto :skip_update
+    )
+)
+
+REM Pruefe, ob die heruntergeladene Datei Inhalt hat
+for %%A in ("%TEMP_FILE%") do if %%~zA equ 0 (
+    echo [WARN] Heruntergeladene Datei ist leer. Ueberspringe Update.
+    del "%TEMP_FILE%"
+    goto :skip_update
+)
+
+echo [INFO] Download erfolgreich. Ersetze lokale 'main.py'.
+move /Y "%TEMP_FILE%" "%SCRIPT_NAME%"
+
+:skip_update
 REM --- Anwendung starten ---
 echo [INFO] Starte die Anwendung (%SCRIPT_NAME%)...
 python %SCRIPT_NAME%
