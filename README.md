@@ -2,7 +2,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Android-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 # Android Control Tool V2 (ACT)
-A cross-platform PC tool for controlling, managing, and automating Android devices — built in **Python** with **ADB** integration.
+A cross-platform PC tool for controlling, managing rooted Android devices — built in **Python** with **ADB** integration.
 
 ### 💥MEGA UPDATE V2.0.0💥
 
