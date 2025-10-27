@@ -119,6 +119,7 @@ Ignore and Press 2x OK! It will be fixed in next Update!
 PyQt6
 requests
 packaging
+qdarktheme
 ```
 
 ## 👤 Developer
