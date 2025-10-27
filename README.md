@@ -2,52 +2,63 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
-## MEGA UPDATE AVAILABLE V2.0.0
+# 📦 Changelog
 
-Android Control Tool v2.0.0 - Release Notes
-This is a massive update, moving from v1.0.1 to v2.0.0, representing a near-complete rewrite of the application's backend and a significant expansion of its feature set. The focus has been on improving stability, performance, and adding powerful new tools for developers and power users.
+All notable changes to **Android Control Tool** will be documented in this file.  
+This project adheres to **Semantic Versioning (SemVer)**.
 
-✨ New Features
-Major New Tools & Tabs
-Screen Mirroring: A new "Screen Mirror" tab integrates scrcpy to provide high-performance, low-latency screen mirroring. The tool can automatically download and set up scrcpy if it's not found.
-Advanced Shell: A dedicated "Shell" tab provides an interactive ADB shell experience with command history and a list of pre-defined "Quick Commands" for common tasks like checking battery, memory, and processes.
-Device Properties Explorer: The new "Device Properties" tab fetches all system properties (getprop) and displays them in a categorized, searchable, and exportable tree view.
-Monkey Tester: A "Monkey Tester" tab has been added, providing a user-friendly interface for running adb shell monkey stress tests on your applications.
-ROM Modifications: For rooted users, the "ROM Mods" tab offers a suite of common system modifications, including:
-Applying custom boot animations and fonts.
-Changing screen DPI.
-Applying an ad-blocking hosts file.
-Toggling SELinux modes and the on-screen navigation bar.
-Setting private DNS and adjusting animation scales.
-Bootloader & Recovery: A consolidated "Bootloader & Recovery" tab replaces the separate Fastboot and Recovery tabs, offering a more streamlined workflow for flashing, wiping, and managing your device in these modes. It now includes a dedicated section for flashing Magisk-patched boot images.
-Minor Feature Additions
-Screen Recording: The "Device Control" tab now includes a robust screen recording feature with options for resolution, bitrate, and time limits.
-Clipboard Management: Easily get and set the device's clipboard content directly from the "Device Control" tab.
-Text Input: A new input field allows you to type and send text directly to the focused field on your device.
-APK Analysis: Before installing an APK, the tool now uses aapt to display detailed information, including permissions, version, and app name.
-Automatic Tool Setup: The settings tab now includes options to automatically download and configure the Android SDK Platform-Tools (adb, fastboot) and other dependencies like scrcpy.
-🚀 Improvements & Refactoring
-Core Architecture: The application's backend has been completely refactored. It now uses QProcess and a non-blocking command queue instead of Python's subprocess, resulting in a more responsive, stable, and crash-free UI.
-Device Detection: Device scanning is now fully asynchronous, eliminating UI freezes when devices are connected or disconnected. The device list updates more efficiently and displays the device model name for easier identification.
-Error Handling & Logging:
-A global exception handler has been implemented to catch and log any unhandled errors, preventing unexpected crashes.
-All application events and errors are now logged to android_control_tool.log in the user's AppData directory.
-Error messages in dialog boxes are now selectable, allowing users to easily copy them for bug reports.
-Package Manager:
-Package information is now much more detailed, showing target SDK, installer, signature, and more.
-Long-running operations (installing, uninstalling) now display a progress dialog and run in the background without freezing the app.
-File Explorer:
-Added drag-and-drop support for pushing files (from local to remote) and pulling files (from remote to local).
-Added a file preview dock that can show thumbnails for images and content for text files on both the local and remote file systems.
-Added context menu options for renaming files and calculating folder sizes.
-Root Tools:
-Emulator rooting is now more robust, with a guided process that handles the required device reboots.
-Added functionality to automatically download and install necessary tools for rooting and ROM modification, such as payload-dumper-go.
-🎨 UI/UX Enhancements
-Modern Theme: The application now features a modern, dark theme for improved readability and aesthetics.
-Icons & Tooltips: Icons have been added to many buttons, and extensive tooltips have been implemented across the application to guide users and explain what each function does.
-Improved Layouts: Many tabs have been reorganized for a more logical and intuitive workflow.
-Copyable Messages: All informational and error message boxes now allow text selection for easy copying.
+---
+
+## [2.0.0] - 2025-10-27  
+### 💥 Major Release — MEGA UPDATE
+
+This update represents a **near-complete backend rewrite** and a **major feature expansion**, moving from **v1.0.1 → v2.0.0**.  
+Focus areas: **stability, performance, usability, and developer productivity.**
+
+---
+
+### ✨ New Features
+
+#### 🧩 Major New Tabs & Tools
+- **Screen Mirroring** – integrates `scrcpy` for low-latency mirroring.  
+  → Automatically downloads and sets up scrcpy if missing.
+- **Advanced Shell** – interactive ADB shell with history and Quick Commands  
+  (battery, memory, process list, etc.).
+- **Device Properties Explorer** – categorized and searchable view of all `getprop` system properties.  
+  → Supports export.
+- **Monkey Tester** – graphical interface for running `adb shell monkey` stress tests.
+- **ROM Modifications** *(root required)*  
+  - Custom boot animations & fonts  
+  - Change screen DPI  
+  - Apply ad-blocking hosts file  
+  - Toggle SELinux & navigation bar  
+  - Adjust animation scales & private DNS
+- **Bootloader & Recovery** – unified tab replacing Fastboot/Recovery.  
+  → Streamlined flashing, wiping, and Magisk-patched boot flashing.
+
+#### 🧩 Minor Additions
+- **Screen Recording** (custom resolution, bitrate, duration).  
+- **Clipboard Management** (get/set device clipboard).  
+- **Text Input** (send text to device fields).  
+- **APK Analysis** (via `aapt` – view permissions, app name, version).  
+- **Automatic Tool Setup** (ADB, Fastboot, scrcpy auto-download).
+
+---
+
+### 🚀 Improvements & Refactoring
+
+#### ⚙️ Core Architecture
+- Backend rewritten to use **QProcess + async command queue** instead of `subprocess`.  
+- Dramatically improves **responsiveness and stability**.
+
+#### 🔍 Device Detection
+- Fully asynchronous device scanning (no UI freeze).  
+- Displays **device model names** for easier identification.
+
+#### 🪵 Error Handling & Logging
+- Global exception handler for all unhandled errors.  
+- All logs written to:
+
 
 
 ## 🧩 Features
