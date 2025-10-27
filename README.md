@@ -107,11 +107,16 @@ Android 4.0 to 16+
 pip install -r requirements.txt
 ```
 
-4. Run UACT:
+4. Run ACT V2:
 
 ```bash
 python main.py
 ```
+Or use auto install & Run .bat
+```bash
+Install & Run for Python 3.11.9.bat
+```
+
 # # Knowing Bugs: 
 - When tool starts, you get a incorrect error messages "device not selected". Ignore and Press Ok!
 
