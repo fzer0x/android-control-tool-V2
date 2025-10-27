@@ -30,7 +30,7 @@ import traceback
 
 import logging
 # Constants
-VERSION = "2.0.2"
+VERSION = "2.0.3"
 APP_NAME = "Android Control Tool"
 DEVELOPER = "fzer0x"
 SUPPORTED_ANDROID_VERSIONS = ["4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10", "11", "12", "13", "14", "15", "16"]
@@ -6650,47 +6650,181 @@ class RootToolsTab(QWidget):
                 self.append_output(f"Error fixing permissions: {str(e)}")
     
     def install_busybox(self):
-        with self.lock:  # Thread-safe operation
-            self.append_output("Installing BusyBox...")
+        if not self.device_manager.current_device:
+            CopyableMessageBox.warning(self, "Error", "No device selected #024")
+            return
+
+        self.progress_dialog = QProgressDialog("Installing BusyBox...", "Cancel", 0, 100, self)
+        self.progress_dialog.setWindowTitle("BusyBox Installation")
+        self.progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        self.progress_dialog.setAutoClose(False)
+        self.progress_dialog.setAutoReset(False)
+        self.progress_dialog.show()
+
+        self.thread = QThread()
+        self.worker = Worker(self._install_busybox_worker, self)
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+
+    def _install_busybox_worker(self, worker_instance, parent_self):
+        """Worker function to install BusyBox in the background."""
+        temp_busybox_file_on_host = None
+        try:
+            parent_self.progress_update.emit(0, "Checking root access...")
+            parent_self.append_output("--- Installing BusyBox ---")
+
+            # 1. Check for root access
+            return_code, _ = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", "echo Root check"], timeout=10)
+            if return_code != 0:
+                parent_self.operation_finished.emit(False, "Root access is required for this operation.")
+                return
+
+            # 2. Check if BusyBox is already installed
+            parent_self.progress_update.emit(5, "Checking existing BusyBox installation...")
+            return_code, _ = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", "busybox"], timeout=10)
+            if return_code == 0:
+                parent_self.operation_finished.emit(True, "BusyBox is already installed.")
+                return
+
+            # 3. Detect device architecture
+            parent_self.progress_update.emit(10, "Detecting device architecture...")
+            parent_self.append_output("Detecting device architecture...")
+            return_code, output = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", "uname -m"], timeout=10)
+            arch = output.strip().lower() if return_code == 0 else "arm"
             
-            url = "https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-armv7l"
+            busybox_url = "https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-armv7l"
+            if 'arm64' in arch or 'aarch64' in arch:
+                busybox_url = "https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-armv8l"
+            elif 'x86_64' in arch:
+                busybox_url = "https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64"
+            elif 'x86' in arch or 'i686' in arch:
+                busybox_url = "https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-i686"
+
+            # 4. Download BusyBox
+            parent_self.progress_update.emit(20, f"Downloading BusyBox for {arch}...")
+            parent_self.append_output(f"Downloading BusyBox for {arch} from {busybox_url}...")
             
-            try:
-                response = requests.get(url)
-                if response.status_code == 200:
-                    temp_dir = tempfile.gettempdir()
-                    busybox_path = os.path.join(temp_dir, "busybox")
-                    
-                    with open(busybox_path, "wb") as f:
-                        f.write(response.content)
-                    
-                    return_code, output = self.device_manager.execute_adb_command(["push", busybox_path, "/data/local/tmp/busybox"])
-                    self.append_output(output)
-                    
+            response = requests.get(busybox_url, stream=True, timeout=30)
+            response.raise_for_status()
+            
+            temp_dir = tempfile.gettempdir()
+            temp_busybox_file_on_host = os.path.join(temp_dir, "busybox")
+            with open(temp_busybox_file_on_host, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            # 5. Push BusyBox to device
+            parent_self.progress_update.emit(40, "Pushing BusyBox to device...")
+            device_tmp_path = "/data/local/tmp/busybox"
+            parent_self.append_output(f"Pushing BusyBox to {device_tmp_path}...")
+            return_code, output = parent_self.device_manager.execute_adb_command(["push", temp_busybox_file_on_host, device_tmp_path], timeout=60)
+            if return_code != 0:
+                parent_self.operation_finished.emit(False, f"Failed to push BusyBox to device: {output}")
+                return
+
+            # 6. Attempt system installation (remount /system first)
+            parent_self.progress_update.emit(60, "Attempting system installation...")
+            parent_self.append_output("Attempting to remount /system as read-write...")
+            
+            remount_success = False
+            remount_commands = ["mount -o remount,rw /", "mount -o remount,rw /system"]
+            for cmd in remount_commands:
+                return_code, output = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", cmd], timeout=15)
+                if return_code == 0 and ("remount succeeded" in output or "Read-only file system" not in output):
+                    remount_success = True
+                    break
+            
+            install_path = ""
+            success = False
+            if remount_success:
+                parent_self.progress_update.emit(70, "Installing to /system/xbin...")
+                parent_self.append_output("/system remounted as read-write. Proceeding with system installation.")
+                install_path = "/system/xbin"
+                commands = [
+                    f"mkdir -p {install_path}",
+                    f"mv {device_tmp_path} {install_path}/busybox",
+                    f"chmod 755 {install_path}/busybox",
+                    f"{install_path}/busybox --install -s {install_path}"
+                ]
+                for i, cmd in enumerate(commands):
+                    parent_self.progress_update.emit(70 + i * 5, f"Executing: {cmd[:40]}...")
+                    return_code, output = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", cmd], timeout=30)
+                    parent_self.append_output(output)
                     if return_code != 0:
-                        self.append_output("Failed to push BusyBox to device")
-                        return
-                    
-                    self.device_manager.execute_adb_command(["shell", "su", "-c", "mv /data/local/tmp/busybox /system/xbin/busybox"])
-                    self.device_manager.execute_adb_command(["shell", "su", "-c", "chmod 755 /system/xbin/busybox"])
-                    return_code, output = self.device_manager.execute_adb_command(["shell", "su", "-c", "/system/xbin/busybox --install /system/xbin"])
-                    self.append_output(output)
-                    
-                    if return_code == 0:
-                        self.append_output("BusyBox installed successfully")
-                    else:
-                        self.append_output("Failed to install BusyBox")
-                else:
-                    self.append_output(f"Failed to download BusyBox: HTTP {response.status_code}")
-            except Exception as e:
-                self.append_output(f"Error installing BusyBox: {str(e)}")
-            finally:
-                if 'busybox_path' in locals() and os.path.exists(busybox_path): # type: ignore
-                    try:
-                        os.remove(busybox_path) # type: ignore
-                    except Exception:
-                        pass
-    
+                        success = False
+                        break
+                    success = True
+            else:
+                parent_self.progress_update.emit(70, "Fallback: Installing to /data/local/bin...")
+                parent_self.append_output("Failed to remount /system. Attempting fallback to /data/local/bin...")
+                install_path = "/data/local/bin"
+                commands = [
+                    f"mkdir -p {install_path}",
+                    f"mv {device_tmp_path} {install_path}/busybox",
+                    f"chmod 755 {install_path}/busybox",
+                    f"PATH=$PATH:{install_path} {install_path}/busybox --install -s {install_path}"
+                ]
+                for i, cmd in enumerate(commands):
+                    parent_self.progress_update.emit(70 + i * 5, f"Executing: {cmd[:40]}...")
+                    return_code, output = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", cmd], timeout=30)
+                    parent_self.append_output(output)
+                    if return_code != 0:
+                        success = False
+                        break
+                    success = True
+                
+                if success:
+                    parent_self.progress_update.emit(95, "Configuring shell PATH...")
+                    parent_self.append_output("Attempting to automatically configure shell PATH for /data/local/bin...")
+                    # This is a more robust way to add to PATH for /data/local/bin
+                    # It creates a wrapper script for 'sh' that includes /data/local/bin in PATH
+                    shell_wrapper_script_content = "#!/system/bin/sh\\nexport PATH=/data/local/bin:$PATH\\nexec /system/bin/sh \"$@\""
+                    path_commands = [
+                        f"echo -e '{shell_wrapper_script_content}' > /data/local/sh_wrapper",
+                        "chmod 755 /data/local/sh_wrapper",
+                        "mount -o remount,rw /", # Remount rootfs if needed for symlink
+                        "mv /system/bin/sh /system/bin/sh_real", # Backup original sh
+                        "ln -s /data/local/sh_wrapper /system/bin/sh" # Symlink to wrapper
+                    ]
+                    for cmd in path_commands:
+                        return_code, output = parent_self.device_manager.execute_adb_command(["shell", "su", "-c", cmd], timeout=15)
+                        parent_self.append_output(output)
+                        if return_code != 0:
+                            parent_self.append_output(f"Warning: Failed to execute PATH configuration command: {cmd}")
+                    parent_self.append_output("Shell PATH configured (may require reboot to take full effect).")
+
+            # 7. Cleanup
+            parent_self.progress_update.emit(98, "Cleaning up temporary files...")
+            parent_self.device_manager.execute_adb_command(["shell", "rm", device_tmp_path])
+            if temp_busybox_file_on_host and os.path.exists(temp_busybox_file_on_host):
+                os.remove(temp_busybox_file_on_host)
+
+            if success:
+                parent_self.append_output("BusyBox installed successfully")
+                parent_self.progress_update.emit(100, "Finished.")
+                parent_self.operation_finished.emit(True, "BusyBox installed successfully!")
+            else:
+                parent_self.append_output("Failed to install BusyBox")
+                parent_self.operation_finished.emit(False, "Failed to install BusyBox. Check the log for details.")
+
+        except requests.exceptions.RequestException as e:
+            parent_self.operation_finished.emit(False, f"Network error downloading BusyBox: {e}")
+        except Exception as e:
+            logging.error(f"BusyBox installation failed: {e}\n{traceback.format_exc()}")
+            parent_self.operation_finished.emit(False, f"An unexpected error occurred: {e}")
+        finally:
+            if temp_busybox_file_on_host and os.path.exists(temp_busybox_file_on_host):
+                try:
+                    os.remove(temp_busybox_file_on_host)
+                except Exception as e:
+                    parent_self.append_output(f"Error cleaning up local temp file: {e}")
+
     def append_output(self, text):
         cursor = self.output_text.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
@@ -7031,9 +7165,14 @@ class RootToolsTab(QWidget):
         self.append_output(f"\n--- {message} ---")
         if not success:
             CopyableMessageBox.warning(self, "Operation Failed", message)
-        if self.progress_dialog:
-            self.progress_dialog.close()
-            self.progress_dialog = None
+        
+        # Delay closing and setting to None to avoid race conditions with rapid progress updates
+        def cleanup_dialog():
+            if self.progress_dialog:
+                self.progress_dialog.close()
+                self.progress_dialog = None
+        
+        QTimer.singleShot(0, cleanup_dialog)
 
     def download_ota_zip(self):
         """Startet den Prozess zum Herunterladen einer OTA-ZIP und Extrahieren von payload.bin."""
@@ -9258,6 +9397,8 @@ class MainWindow(QMainWindow):
         elif isinstance(current_tab, FileExplorerTab):
             current_tab.refresh_remote_directory()
             current_tab.refresh_local_directory()
+        elif isinstance(current_tab, DevicePropertiesTab):
+            current_tab.refresh_properties()
 
 
     def update_device_list(self, devices):
