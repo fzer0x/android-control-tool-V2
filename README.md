@@ -67,7 +67,7 @@ Focus areas: **stability, performance, usability, and developer productivity.**
 
 
 
-## 🧩 Features
+## 🧩 Features [v1.0.0]
 
 - Device detection (ADB / Fastboot)
 - Reboot options (System, Recovery, Bootloader, Download)
