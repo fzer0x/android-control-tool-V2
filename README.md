@@ -108,10 +108,10 @@ pip install -r requirements.txt
 python main.py
 ```
 # # Knowing Bugs: 
-- When tool starts, you get 2 incorrect error messages that the device is not recognized.
-Ignore and Press 2x OK! It will be fixed in next Update!
+- When tool starts, you get a incorrect error messages that the device is not recognized.
+Ignore and Press Ok!
 
-- Build.prop viewer maybe not work with all devices
+- Build.prop viewer maybe not work with all devices (fixed)
 
 ## 📦 Requirements
 
