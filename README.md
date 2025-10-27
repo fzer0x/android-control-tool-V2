@@ -98,9 +98,10 @@ Android 4.0 to 16+
 
 ## 🚀 Installation
 
-1. Make sure `adb` and `fastboot` are available in your system PATH.
+1. Make sure `adb` and `fastboot` `platform-tools` are available in your system PATH or use Auto Installer in Settings Tab
 2. Install Python 3.11 (3.9+)
-3. Install dependencies:
+3. Install dependencies
+
 
 ```bash
 pip install -r requirements.txt
