@@ -2,7 +2,7 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
-### 💥MEGA UPDATE V2.0.0💥
+### 💥MEGA UPDATE V2.0.1💥
 
 ## 📸 Screenshot
 
@@ -10,7 +10,11 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 ![UACT Screenshot](screenshot2.png)
 ![UACT Screenshot](screenshot3.png)
 
-# 📦 Changelog
+# 📦 Changelog [2.0.1]
+
+- Fix "Device not selected" on Startup  
+
+# 📦 Changelog [2.0.0]
 
 All notable changes to **Android Control Tool** will be documented in this file.  
 This project adheres to **Semantic Versioning (SemVer)**.
