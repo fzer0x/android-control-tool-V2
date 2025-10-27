@@ -2,13 +2,17 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
-### 💥MEGA UPDATE V2.0.1💥
+### 💥MEGA UPDATE V2.0.2💥
 
 ## 📸 Screenshot
 
 ![UACT Screenshot](screenshot.png)
 ![UACT Screenshot](screenshot2.png)
 ![UACT Screenshot](screenshot3.png)
+
+# 📦 Changelog [2.0.2]
+
+- Fix scrcpy Download issue  
 
 # 📦 Changelog [2.0.1]
 
