@@ -12,7 +12,7 @@ A powerful Python GUI tool to manage and control Android devices via ADB and Fas
 
 # 📦 Changelog [2.0.1]
 
-- Fix "Device not selected" on Startup  
+- Fix "Device not selected" Error on Startup  
 
 # 📦 Changelog [2.0.0]
 
