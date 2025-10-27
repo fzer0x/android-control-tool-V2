@@ -30,7 +30,7 @@ import traceback
 
 import logging
 # Constants
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 APP_NAME = "Android Control Tool"
 DEVELOPER = "fzer0x"
 SUPPORTED_ANDROID_VERSIONS = ["4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10", "11", "12", "13", "14", "15", "16"]
@@ -479,7 +479,7 @@ class DeviceManager(QObject):
 
     def execute_adb_command(self, command, device_specific=True, timeout=30):
         if not self.current_device:
-            return None, "No device selected"
+            return None, "No device selected #001"
         
         full_command = [self.adb_path]
         if device_specific:
@@ -505,7 +505,7 @@ class DeviceManager(QObject):
 
     def execute_fastboot_command(self, command, device_specific=True, timeout=30):
         if not self.current_device:
-            return None, "No device selected"
+            return None, "No device selected #002"
         
         full_command = [self.fastboot_path]
         if device_specific:
@@ -530,7 +530,7 @@ class DeviceManager(QObject):
 
     def reboot_device(self, mode="system"):
         if not self.current_device:
-            return False, "No device selected"
+            return False, "No device selected #003"
         
         device_type = next((d["type"] for d in self.connected_devices if d["id"] == self.current_device), None)
         
@@ -601,8 +601,8 @@ class FileManager(QObject):
         self.active_transfers = {}
     
     def push_file(self, local_path, remote_path):
-        if not getattr(self.device_manager, "suppress_no_device_warning", False):
-            QMessageBox.warning(self, "Error", "No device selected")
+        if not self.device_manager.current_device and not getattr(self.device_manager, "suppress_no_device_warning", False):
+            QMessageBox.warning(None, "Error", "No device selected #004")
             return
         
         local_path = os.path.normpath(local_path)
@@ -696,7 +696,7 @@ class FileManager(QObject):
     
     def pull_file(self, remote_path, local_path):
         if not self.device_manager.current_device:
-            self.file_operation_complete.emit(False, "No device selected")
+            self.file_operation_complete.emit(False, "No device selected #005")
             return
         
         local_path = os.path.normpath(local_path)
@@ -836,8 +836,8 @@ class PackageManager(QObject):
     
     def get_installed_packages(self, system_only=False, third_party_only=False, enabled_only=False, disabled_only=False):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #006")
+            return False, "No device selected #006"
         
         try:
             command = [self.device_manager.adb_path, "-s", self.device_manager.current_device, "shell", "pm", "list", "packages"]
@@ -874,7 +874,7 @@ class PackageManager(QObject):
     
     def get_package_info(self, package_name):
         if not self.device_manager.current_device:
-            return False, "No device selected"
+            return False, "No device selected #007"
         
         if not package_name or not isinstance(package_name, str):
             return False, "Invalid package name"
@@ -991,8 +991,8 @@ class PackageManager(QObject):
     
     def install_package(self, apk_path, replace_existing=False, grant_all_permissions=False, test_only=False):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #008")
+            return False, "No device selected #008"
         
         apk_path = os.path.normpath(apk_path)
         if not os.path.exists(apk_path):
@@ -1031,8 +1031,8 @@ class PackageManager(QObject):
     
     def uninstall_package(self, package_name, keep_data=False):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #009")
+            return False, "No device selected #009"
         
         if not package_name or not isinstance(package_name, str):
             self.package_operation_complete.emit(False, "Invalid package name")
@@ -1064,8 +1064,8 @@ class PackageManager(QObject):
     
     def clear_package_data(self, package_name):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #010")
+            return False, "No device selected #010"
         
         if not package_name or not isinstance(package_name, str):
             self.package_operation_complete.emit(False, "Invalid package name")
@@ -1091,8 +1091,8 @@ class PackageManager(QObject):
     
     def enable_package(self, package_name):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #011")
+            return False, "No device selected #011"
         
         if not package_name or not isinstance(package_name, str):
             self.package_operation_complete.emit(False, "Invalid package name")
@@ -1118,8 +1118,8 @@ class PackageManager(QObject):
     
     def disable_package(self, package_name):
         if not self.device_manager.current_device:
-            self.package_operation_complete.emit(False, "No device selected")
-            return False, "No device selected"
+            self.package_operation_complete.emit(False, "No device selected #012")
+            return False, "No device selected #012"
         
         if not package_name or not isinstance(package_name, str):
             self.package_operation_complete.emit(False, "Invalid package name")
@@ -1155,7 +1155,7 @@ class BackupManager(QObject):
     
     def create_backup(self, backup_path, include_apks=False, include_shared=False, include_system=False, all_apps=False, packages=None):
         if not self.device_manager.current_device:
-            self.backup_complete.emit(False, "No device selected")
+            self.backup_complete.emit(False, "No device selected #013")
             return
         
         if not packages and not all_apps:
@@ -1240,7 +1240,7 @@ class BackupManager(QObject):
     
     def restore_backup(self, backup_path):
         if not self.device_manager.current_device:
-            self.backup_complete.emit(False, "No device selected")
+            self.backup_complete.emit(False, "No device selected #014")
             return
         
         backup_path = os.path.normpath(backup_path)
@@ -1408,7 +1408,7 @@ class LogcatManager(QObject):
     
     def save_logcat(self, file_path, filters=None):
         if not self.device_manager.current_device:
-            return False, "No device selected"
+            return False, "No device selected #015"
         
         file_path = os.path.normpath(file_path)
         
@@ -2303,7 +2303,7 @@ class FileExplorerTab(QWidget):
     def refresh_remote_directory(self):
         if not self.device_manager.current_device:
             if not getattr(self.device_manager, "suppress_no_device_warning", False):
-                QMessageBox.warning(self, "Error", "No device selected")
+                QMessageBox.warning(self, "Error", "No device selected #016")
             return
         
         self.remote_files_tree.clear()
@@ -3038,7 +3038,6 @@ class PackageManagerTab(QWidget):
         self.search_timer = QTimer(self)
         self.search_timer.setSingleShot(True)
         self.search_timer.timeout.connect(self.filter_packages)
-        self.refresh_packages()
 
     def force_stop_package(self):
         """Force stops the selected package."""
@@ -3249,6 +3248,11 @@ class PackageManagerTab(QWidget):
         self.package_list.customContextMenuRequested.connect(self.show_package_context_menu)
         self.package_list.itemDoubleClicked.connect(self.show_package_info)
         self.package_list.itemSelectionChanged.connect(self.show_package_info)
+
+    def showEvent(self, event):
+        """When the tab is shown for the first time, refresh the package list."""
+        super().showEvent(event)
+        self.refresh_packages()
     
     def refresh_packages(self):
         system_only = self.system_check.isChecked()
@@ -3886,13 +3890,13 @@ class LogcatTab(QWidget):
         
         if not self.device_manager.current_device:
             if not getattr(self.device_manager, "suppress_no_device_warning", False):
-                CopyableMessageBox.warning(self, "Error", "No device selected")
+                CopyableMessageBox.warning(self, "Error", "No device selected #017")
             return
 
         started = self.logcat_manager.start_logcat(filters=" ".join(filters) if filters else None)
         if started is False:
             if not getattr(self.device_manager, "suppress_no_device_warning", False):
-                CopyableMessageBox.warning(self, "Error", "No device selected")
+                CopyableMessageBox.warning(self, "Error", "No device selected #018")
     
     def stop_logcat(self):
         self.logcat_manager.stop_logcat()
@@ -5433,7 +5437,7 @@ class RomModificationsTab(QWidget):
 
     def apply_animation_scales(self):
         if not self.device_manager.current_device:
-            CopyableMessageBox.warning(self, "Error", "No device selected.")
+            CopyableMessageBox.warning(self, "Error", "No device selected #019")
             return
         self.append_output("--- Applying Animation Scales ---", "yellow")
         
@@ -5463,7 +5467,7 @@ class RomModificationsTab(QWidget):
 
     def _run_root_operation(self, title, warning, operation_func, *args):
         if not self.device_manager.current_device:
-            CopyableMessageBox.warning(self, "Error", "No device selected.")
+            CopyableMessageBox.warning(self, "Error", "No device selected #020")
             return
 
         code, _ = self.device_manager.execute_adb_command(["shell", "su", "-c", "echo Root check"])
@@ -8218,7 +8222,7 @@ class ScreenMirrorTab(QWidget):
 
     def start_mirroring(self):
         if not self.device_manager.current_device:
-            QMessageBox.warning(self, "Error", "No device selected.")
+            QMessageBox.warning(self, "Error", "No device selected #021")
             return
 
         if self.mirror_process and self.mirror_process.state() == QProcess.ProcessState.Running:
@@ -9179,7 +9183,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(XposedHookTab(self.device_manager), "Xposed Hook")
         self.tab_widget.addTab(RomModificationsTab(self.device_manager), "ROM Mods")
         self.tab_widget.addTab(RootToolsTab(self.device_manager), "Root Tools")
-        self.tab_widget.addTab(BootloaderRecoveryTab(self.device_manager), "Bootloader & Recovery")
+        self.tab_widget.addTab(BootloaderRecoveryTab(self.device_manager), "Bootloader/Recovery")
         self.tab_widget.addTab(SettingsTab(self.device_manager), "Settings")
         
         main_layout.addWidget(self.tab_widget)
@@ -9324,7 +9328,7 @@ class MainWindow(QMainWindow):
     def open_adb_shell(self):
         if not self.device_manager.current_device:
             if not getattr(self.device_manager, "suppress_no_device_warning", False):
-                QMessageBox.warning(self, "Error", "No device selected")
+                QMessageBox.warning(self, "Error", "No device selected #022")
             return
         
         shell_dialog = QDialog(self)
@@ -9358,7 +9362,7 @@ class MainWindow(QMainWindow):
     def take_screenshot(self):
         if not self.device_manager.current_device:
             if not getattr(self.device_manager, "suppress_no_device_warning", False):
-                QMessageBox.warning(self, "Error", "No device selected")
+                QMessageBox.warning(self, "Error", "No device selected #023")
             return
         
         file_path, _ = QFileDialog.getSaveFileName(
