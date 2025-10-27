@@ -18,14 +18,8 @@ A powerful Python GUI tool to manage and control rooted Android devices via ADB 
 
 - Fix "Device not selected" Error on Startup  
 
-# 📦 Changelog [2.0.0]
-
-All notable changes to **Android Control Tool** will be documented in this file.  
-This project adheres to **Semantic Versioning (SemVer)**.
-
----
-
-## [2.0.0] - 2025-10-27  
+# 📦 Changelog [2.0.0] 2025-10-27
+  
 ### 💥 Major Release — MEGA UPDATE
 
 This update represents a **near-complete backend rewrite** and a **major feature expansion**, moving from **v1.0.1 → v2.0.0**.  
