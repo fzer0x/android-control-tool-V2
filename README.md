@@ -2,6 +2,8 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
+### 💥MEGA UPDATE V2.0.0💥
+
 ## 📸 Screenshot
 
 ![UACT Screenshot](screenshot.png)
