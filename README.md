@@ -2,6 +2,12 @@
 
 A powerful Python GUI tool to manage and control Android devices via ADB and Fastboot.
 
+## 📸 Screenshot
+
+![UACT Screenshot](screenshot.png)
+![UACT Screenshot](screenshot2.png)
+![UACT Screenshot](screenshot3.png)
+
 # 📦 Changelog
 
 All notable changes to **Android Control Tool** will be documented in this file.  
@@ -75,12 +81,6 @@ Focus areas: **stability, performance, usability, and developer productivity.**
 - Install zip via Sideload
 - Root Tools/Management
 - Build.prop Viewer/Editor (need to update)
-
-## 📸 Screenshot
-
-![UACT Screenshot](screenshot.png)
-![UACT Screenshot](screenshot2.png)
-![UACT Screenshot](screenshot3.png)
 
 ## 🖼️ Built with
 
