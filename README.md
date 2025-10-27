@@ -12,6 +12,11 @@ A cross-platform PC tool for controlling, managing rooted Android devices — bu
 ![UACT Screenshot](screenshot2.png)
 ![UACT Screenshot](screenshot3.png)
 
+# 📦 Changelog [2.0.3]
+
+- Fix BusyBox installer
+- improve functions
+
 # 📦 Changelog [2.0.2]
 
 - Fix scrcpy Download issue  
