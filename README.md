@@ -108,7 +108,7 @@ pip install -r requirements.txt
 python main.py
 ```
 # # Knowing Bugs: 
-- When tool starts, you get a incorrect error messages "device not selected. Ignore and Press Ok!
+- When tool starts, you get a incorrect error messages "device not selected". Ignore and Press Ok!
 
 ## 📦 Requirements
 
