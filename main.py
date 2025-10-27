@@ -30,7 +30,7 @@ import traceback
 
 import logging
 # Constants
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 APP_NAME = "Android Control Tool"
 DEVELOPER = "fzer0x"
 SUPPORTED_ANDROID_VERSIONS = ["4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10", "11", "12", "13", "14", "15", "16"]
@@ -8317,8 +8317,8 @@ class ScreenMirrorTab(QWidget):
 
         self.thread.start()
 
-    def _scrcpy_install_worker(self):
-        """Worker function to download and unzip scrcpy."""
+    def _scrcpy_install_worker(self, worker_instance):
+        """Worker function to download and unzip scrcpy. Accepts worker_instance argument."""
         api_url = "https://api.github.com/repos/Genymobile/scrcpy/releases/latest"
         response = requests.get(api_url, timeout=15)
         response.raise_for_status()
