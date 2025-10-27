@@ -122,7 +122,8 @@ Install & Run for Python 3.11.9.bat
 ```
 
 # # Knowing Bugs: 
-- When tool starts, you get a incorrect error messages "device not selected". Ignore and Press Ok!
+
+
 
 ## 📦 Requirements
 
