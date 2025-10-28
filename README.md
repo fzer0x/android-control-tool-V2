@@ -59,7 +59,9 @@ Focus areas: **stability, performance, usability, and developer productivity.**
 - **Text Input** (send text to device fields).  
 - **APK Analysis** (via `aapt` – view permissions, app name, version).  
 - **Automatic Tool Setup** (ADB, Fastboot, scrcpy auto-download).
-
+- **Xposed Hook** Real Time Hook injection.
+- **Emulator Management** 
+- and much more
 ---
 
 ### 🚀 Improvements & Refactoring
