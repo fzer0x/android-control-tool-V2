@@ -6899,49 +6899,138 @@ class RootToolsTab(QWidget):
             
             os.remove(zip_path)
 
+            # NEU: Java-Prüfung und automatische Installation
+            parent_self.progress_update.emit(55, "Suche nach Java (JDK)...")
+            parent_self.append_output("Überprüfe auf Java (JDK) Installation...")
+            java_home = None
+            # 1. Prüfe, ob JAVA_HOME bereits gesetzt ist und gültig ist
+            if os.environ.get("JAVA_HOME") and os.path.exists(os.path.join(os.environ.get("JAVA_HOME"), "bin", "java.exe")):
+                java_home = os.environ.get("JAVA_HOME")
+                parent_self.append_output(f"Gefundenes JAVA_HOME: {java_home}")
+            
+            # 2. Prüfe, ob 'java' im System-PATH ist
+            if not java_home:
+                java_exe_path = shutil.which("java")
+                if java_exe_path:
+                    # Versuche, JAVA_HOME aus dem Pfad abzuleiten
+                    java_home = os.path.dirname(os.path.dirname(os.path.abspath(java_exe_path)))
+                    parent_self.append_output(f"Gefundenes 'java' im PATH. Abgeleitetes JAVA_HOME: {java_home}")
+
+            # 3. Prüfe auf lokale Installation
+            local_jdk_path = os.path.join(tools_dir, "jdk")
+            if not java_home and os.path.exists(os.path.join(local_jdk_path, "bin", "java.exe")):
+                java_home = local_jdk_path
+                parent_self.append_output(f"Gefundene lokale JDK-Installation: {java_home}")
+
+            # 4. Wenn immer noch nicht gefunden, automatisch installieren
+            if not java_home:
+                parent_self.append_output("Keine Java-Installation gefunden. Starte automatische Installation von OpenJDK 17...")
+                # URL für Eclipse Adoptium OpenJDK 17 (LTS) für Windows x64
+                jdk_zip_url = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse"
+                jdk_zip_path = os.path.join(tempfile.gettempdir(), "openjdk.zip")
+
+                parent_self.progress_update.emit(56, "Lade OpenJDK 17 herunter...")
+                parent_self.append_output(f"Lade herunter von: {jdk_zip_url}")
+                
+                with requests.get(jdk_zip_url, stream=True, timeout=300) as r:
+                    r.raise_for_status()
+                    total_size = int(r.headers.get('content-length', 0))
+                    downloaded = 0
+                    with open(jdk_zip_path, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            if parent_self.progress_dialog and parent_self.progress_dialog.wasCanceled(): raise InterruptedError("Download abgebrochen")
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total_size > 0:
+                                progress = 56 + int((downloaded / total_size) * 2) # Skaliert auf 56-58%
+                                parent_self.progress_update.emit(progress, f"Download JDK: {downloaded // 1024**2} MB / {total_size // 1024**2} MB")
+                
+                parent_self.progress_update.emit(58, "Extrahiere OpenJDK...")
+                parent_self.append_output("Extrahiere OpenJDK...")
+                
+                with zipfile.ZipFile(jdk_zip_path, 'r') as zip_ref:
+                    temp_extract_path = os.path.join(tools_dir, "jdk_temp_extract")
+                    os.makedirs(temp_extract_path, exist_ok=True)
+                    zip_ref.extractall(temp_extract_path)
+                
+                extracted_folder_name = os.listdir(temp_extract_path)[0]
+                extracted_folder_path = os.path.join(temp_extract_path, extracted_folder_name)
+
+                if os.path.exists(local_jdk_path): shutil.rmtree(local_jdk_path)
+                shutil.move(extracted_folder_path, local_jdk_path)
+                
+                shutil.rmtree(temp_extract_path); os.remove(jdk_zip_path)
+                java_home = local_jdk_path
+                parent_self.append_output(f"OpenJDK 17 erfolgreich installiert in: {java_home}")
+
             # 3. SDK-Manager ausführen, um Emulator und Platform-Tools zu installieren
-            parent_self.progress_update.emit(60, "Installiere Emulator & Platform-Tools...")
+            parent_self.progress_update.emit(60, "Akzeptiere SDK-Lizenzen...")
             sdkmanager_path = os.path.join(sdk_dir, "cmdline-tools", "latest", "bin", "sdkmanager.bat")
             
-            if not os.path.exists(sdkmanager_path):
-                raise FileNotFoundError("sdkmanager.bat nicht gefunden nach Extraktion.")
+            # Umgebung für den Popen-Aufruf vorbereiten
+            sdk_env = os.environ.copy()
+            sdk_env["JAVA_HOME"] = java_home
 
-            parent_self.append_output("Akzeptiere Lizenzen und installiere 'emulator' und 'platform-tools' via sdkmanager...")
+            # Schritt 1: Lizenzen automatisch akzeptieren
+            parent_self.append_output("Versuche, alle SDK-Lizenzen automatisch zu akzeptieren...")
+            license_process = subprocess.Popen(
+                [sdkmanager_path, "--licenses"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding='utf-8',
+                errors='replace',
+                shell=False,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                env=sdk_env
+            )
+            try:
+                # Sende genug 'y' um alle Lizenzen zu akzeptieren
+                license_stdout, license_stderr = license_process.communicate(input='y\ny\ny\ny\ny\ny\ny\n', timeout=120)
+                parent_self.append_output(license_stdout)
+                if license_process.returncode != 0:
+                    # Dies ist oft kein kritischer Fehler, nur eine Warnung ausgeben
+                    parent_self.append_output(f"[WARNUNG] Lizenz-Akzeptierung meldet Exit-Code: {license_process.returncode}. Das ist oft unproblematisch.\n{license_stderr}")
+                else:
+                    parent_self.append_output("Lizenzen erfolgreich akzeptiert.")
+            except subprocess.TimeoutExpired:
+                license_process.kill()
+                parent_self.append_output("[FEHLER] Timeout beim Akzeptieren der Lizenzen.")
+                raise RuntimeError("SDK Manager timed out during license acceptance.")
+
+            # Schritt 2: Komponenten installieren
+            parent_self.progress_update.emit(70, "Installiere Emulator & Platform-Tools...")
+            parent_self.append_output("Installiere 'emulator' und 'platform-tools'...")
             
             # Verwende Popen, um die Ausgabe in Echtzeit zu verarbeiten und den Fortschritt anzuzeigen
             process = subprocess.Popen(
                 [sdkmanager_path, f"--sdk_root={sdk_dir}", "platform-tools", "emulator", "--channel=3"], # channel=3 for stable
-                stdin=subprocess.PIPE,
+                stdin=subprocess.DEVNULL, # Keine Eingabe mehr nötig, da Lizenzen akzeptiert sind
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                text=True,
                 encoding='utf-8',
                 errors='replace',
                 shell=False, # shell=True ist hier problematisch
-                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                env=sdk_env
             )
                 
+            
+            # Echtzeit-Ausgabe für den Fortschritt verarbeiten
             while True:
-                try:
-                    # Schreibe 'y' + newline, um Lizenzen zu akzeptieren
-                    process.stdin.write('y\n')
-                    process.stdin.flush()
-                except (IOError, BrokenPipeError):
-                    # Prozess hat die Eingabe geschlossen, was normal ist, nachdem er die Lizenz akzeptiert hat
-                    pass
-
                 output = process.stdout.readline()
                 if not output and process.poll() is not None:
                     break
                 if output:
                     line = output.strip()
                     parent_self.append_output(line)
+                
                     # Parse den Fortschritt aus der sdkmanager-Ausgabe
                     match = re.search(r'\[\s*(\d+)%\]', line)
                     if match:
                         sdk_progress = int(match.group(1))
-                        # Skaliere den sdkmanager-Fortschritt auf den Bereich 60-95% des Gesamtvorgangs
-                        total_progress = 60 + int(sdk_progress * 0.35)
+                        # Skaliere den sdkmanager-Fortschritt auf den Bereich 70-95% des Gesamtvorgangs
+                        total_progress = 70 + int(sdk_progress * 0.25)
                         parent_self.progress_update.emit(total_progress, f"Installiere SDK-Komponenten: {sdk_progress}%")
             
             if process.returncode != 0:
