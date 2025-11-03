@@ -12,6 +12,11 @@ A cross-platform PC tool for controlling, managing rooted Android devices — bu
 ![UACT Screenshot](screenshot2.png)
 ![UACT Screenshot](screenshot3.png)
 
+# 📦 Changelog [2.1.0]
+- Add Androguard APK Analysis Tab
+- Add JADX intregation
+- Fix installer
+
 # 📦 Changelog [2.0.3]
 
 - Fix BusyBox installer
