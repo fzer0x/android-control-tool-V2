@@ -10,13 +10,14 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QTabWidget, QPushButton, QLabel, QLineEdit, QTextEdit, QTextBrowser,
     QComboBox, QCheckBox, QGroupBox, QScrollArea, QFileDialog,
-    QMessageBox, QProgressBar, QListWidget, QTreeWidget, QInputDialog, QProgressDialog,
+    QMessageBox, QProgressBar, QListWidget, QTreeWidget, QInputDialog, QProgressDialog, QProgressDialog,
     QTreeWidgetItem, QSplitter, QFrame, QMenu, QSystemTrayIcon, QGridLayout, QSpinBox, QStyle, QStyledItemDelegate, QDockWidget,
     QFormLayout, QStatusBar, QDialog)
 from PyQt6.QtGui import (QIcon, QFont, QPixmap, QColor, QPalette, QAction, QTextDocument,
                          QTextCursor, QStandardItemModel, QStandardItem)
 from PyQt6.QtCore import (Qt, QSize, QTimer, QProcess, QSettings, QThread,
                           pyqtSignal, QObject, QByteArray, QDateTime, QStandardPaths)
+from tools.androguard_tab import AndroguardTab
 from functools import partial
 import webbrowser
 import json
@@ -27,10 +28,14 @@ import shutil
 import xml.etree.ElementTree as ET
 from packaging import version
 import traceback
+import requests
+import shutil
+import zipfile
+import tempfile
 
 import logging
 # Constants
-VERSION = "2.0.3"
+VERSION = "2.1.0"
 APP_NAME = "Android Control Tool"
 DEVELOPER = "fzer0x"
 SUPPORTED_ANDROID_VERSIONS = ["4.0", "5.0", "6.0", "7.0", "8.0", "9.0", "10", "11", "12", "13", "14", "15", "16"]
@@ -9408,6 +9413,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(DevicePropertiesTab(self.device_manager), "Device Properties")
         self.tab_widget.addTab(MonkeyTesterTab(self.device_manager), "Monkey Tester")
         self.tab_widget.addTab(ScreenMirrorTab(self.device_manager), "Screen Mirror")
+        self.tab_widget.addTab(AndroguardTab(self.device_manager), "APK Analysis")
         self.tab_widget.addTab(XposedHookTab(self.device_manager), "Xposed Hook")
         self.tab_widget.addTab(RomModificationsTab(self.device_manager), "ROM Mods")
         self.tab_widget.addTab(RootToolsTab(self.device_manager), "Root Tools")
@@ -9778,8 +9784,75 @@ class MainWindow(QMainWindow):
             }
         """)
 
+def check_and_install_java():
+    """Checks for a valid Java installation and installs it if not found."""
+    java_home = os.environ.get("JAVA_HOME")
+    if java_home and os.path.exists(os.path.join(java_home, "bin", "java.exe")):
+        return
+
+    if shutil.which("java"):
+        return
+
+    local_jdk_path = os.path.join(os.getcwd(), "tools", "jdk")
+    if os.path.exists(os.path.join(local_jdk_path, "bin", "java.exe")):
+        os.environ["JAVA_HOME"] = local_jdk_path
+        return
+
+    reply = QMessageBox.question(None, "Java Not Found",
+                                 "Java is not installed or configured correctly. This is required for some tools to work.\n\n"
+                                 "Would you like to download and install OpenJDK now?",
+                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+    if reply != QMessageBox.StandardButton.Yes:
+        return
+
+    progress = QProgressDialog("Downloading OpenJDK...", "Cancel", 0, 100)
+    progress.setWindowModality(Qt.WindowModality.WindowModal)
+    progress.show()
+
+    try:
+        jdk_zip_url = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse"
+        jdk_zip_path = os.path.join(tempfile.gettempdir(), "openjdk.zip")
+
+        with requests.get(jdk_zip_url, stream=True, timeout=300) as r:
+            r.raise_for_status()
+            total_size = int(r.headers.get('content-length', 0))
+            downloaded = 0
+            with open(jdk_zip_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if progress.wasCanceled():
+                        return
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = int((downloaded / total_size) * 100)
+                        progress.setValue(percent)
+
+        progress.setLabelText("Installing OpenJDK...")
+        with zipfile.ZipFile(jdk_zip_path, 'r') as zip_ref:
+            temp_extract_path = os.path.join(os.getcwd(), "tools", "jdk_temp_extract")
+            os.makedirs(temp_extract_path, exist_ok=True)
+            zip_ref.extractall(temp_extract_path)
+        
+        extracted_folder_name = os.listdir(temp_extract_path)[0]
+        extracted_folder_path = os.path.join(temp_extract_path, extracted_folder_name)
+
+        if os.path.exists(local_jdk_path): shutil.rmtree(local_jdk_path)
+        shutil.move(extracted_folder_path, local_jdk_path)
+        
+        shutil.rmtree(temp_extract_path)
+        os.remove(jdk_zip_path)
+        os.environ["JAVA_HOME"] = local_jdk_path
+
+        QMessageBox.information(None, "Java Installed", f"OpenJDK has been installed to {local_jdk_path}")
+
+    except Exception as e:
+        QMessageBox.critical(None, "Java Installation Failed", f"An error occurred during Java installation: {e}")
+    finally:
+        progress.close()
+
 def main():
     app = QApplication(sys.argv)
+    check_and_install_java()
     log_file = setup_logging()
     sys.excepthook = global_exception_hook
     
