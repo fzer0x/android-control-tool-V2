@@ -141,8 +141,11 @@ Install & Run for Python 3.11.9.bat
 ```
 PyQt6
 requests
+androguard
+networkx
+matplotlib
 packaging
-qdarktheme
+pyqtdarktheme
 ```
 
 ## 👤 Developer
