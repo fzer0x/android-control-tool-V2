@@ -16,7 +16,8 @@ A cross-platform PC tool for controlling, managing rooted Android devices — bu
 
 - Fix BusyBox installer
 - improve functions
-
+- add auto JDK installer
+ 
 # 📦 Changelog [2.0.2]
 
 - Fix scrcpy Download issue  
