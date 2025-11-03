@@ -9256,7 +9256,7 @@ class SettingsTab(QWidget):
         CopyableMessageBox.information(self, "Success", "Settings saved successfully")
         
         # Ask user to apply live settings
-        if QMessageBox.question(self, "Apply Settings", "Some settings require a restart to take full effect. Apply live-updatable settings now?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
+        if QMessageBox.question(self, "Apply Settings", "Some settings require a restart to take full effect. Please Restart the application now!", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
             self.apply_settings()
 
     def setup_sdk_tools(self):
