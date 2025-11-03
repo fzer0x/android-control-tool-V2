@@ -6352,8 +6352,8 @@ class RootToolsTab(QWidget):
             try:
                 response = requests.get(url)
                 if response.status_code == 200:
-                    # NOTE: This is simplified. A real implementation would parse the releases page.
-                    download_url = "https://github.com/topjohnwu/Magisk/releases/download/v23.0/Magisk-v23.0.apk"
+                    # NOTE: Direct download link for Magisk APK
+                    download_url = "https://github.com/topjohnwu/Magisk/releases/download/v29.0/Magisk-v29.0.apk"
                     
                     temp_dir = tempfile.gettempdir()
                     apk_path = os.path.join(temp_dir, "magisk.apk")
