@@ -16,7 +16,7 @@ A cross-platform PC tool for controlling, managing rooted Android devices — bu
 # 📦 Changelog [2.1.0] [03.11.2025]
 - Add APK Analysis Tab
 - Add Androguard
-- Add JADX intregation
+- Add JADX integration
 - Fix installer
 
 # 📦 Changelog [2.0.3]
