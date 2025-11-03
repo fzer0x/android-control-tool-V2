@@ -1,5 +1,7 @@
 PyQt6
 requests
+androguard
+networkx
+matplotlib
 packaging
 pyqtdarktheme
-
