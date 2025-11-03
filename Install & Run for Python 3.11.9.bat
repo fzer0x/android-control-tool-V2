@@ -3,11 +3,7 @@ setlocal
 
 REM =================================================================
 REM  Run-Skript fuer Android Control Tool (Entwicklung)
-REM  Richtet die Umgebung ein und startet die Anwendung.
-REM
-REM  Voraussetzungen:
-REM  1. Python 3.8+ muss installiert und im System-PATH sein.
-REM  2. Eine 'requirements.txt' Datei muss im selben Verzeichnis existieren.
+REM  Richtet die Umgebung ein, aktualisiert pip und startet die Anwendung.
 REM =================================================================
 
 echo [INFO] Starte Android Control Tool im Entwicklungsmodus...
@@ -15,12 +11,13 @@ echo [INFO] Starte Android Control Tool im Entwicklungsmodus...
 REM --- Konfiguration ---
 set SCRIPT_NAME=main.py
 set VENV_DIR=venv
+REM Optional: Pfad zu ADB hier definieren, falls nicht im PATH
+set "ADB_PATH=C:\Android\platform-tools"
 
-REM --- Python-Pruefung (bevorzugt die neueste Version ab 3.8) ---
+REM --- Python-Pruefung ---
 echo [INFO] Suche nach einer kompatiblen Python-Installation (3.8+)...
 set PYTHON_EXE=
 
-REM --- Explizite Pruefung auf Python 3.11 ---
 echo [INFO] Pruefe auf Python 3.11...
 py -3.11 --version >nul 2>&1
 if %errorlevel% equ 0 (
@@ -42,6 +39,15 @@ if not defined PYTHON_EXE (
 
 echo [INFO] Verwende '%PYTHON_EXE%' zum Ausfuehren.
 
+REM --- PIP-Upgrade global ---
+echo [INFO] Aktualisiere systemweites pip...
+%PYTHON_EXE% -m pip install --upgrade pip
+if %errorlevel% neq 0 (
+    echo [WARN] Konnte systemweites pip nicht aktualisieren.
+) else (
+    echo [INFO] Systemweites pip erfolgreich aktualisiert.
+)
+
 REM --- Virtuelle Umgebung einrichten ---
 if not exist "%VENV_DIR%\" (
     echo [INFO] Erstelle virtuelle Umgebung in '%VENV_DIR%'...
@@ -60,13 +66,35 @@ if not defined VIRTUAL_ENV (
     goto :error_exit
 )
 
+REM --- PIP im venv updaten ---
+echo [INFO] Aktualisiere pip innerhalb der virtuellen Umgebung...
+python -m pip install --upgrade pip
+if %errorlevel% neq 0 (
+    echo [WARN] Konnte pip im venv nicht aktualisieren.
+) else (
+    echo [INFO] pip im venv erfolgreich aktualisiert.
+)
+
 REM --- Abhaengigkeiten installieren ---
 echo [INFO] Installiere Abhaengigkeiten aus requirements.txt...
-pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 if %errorlevel% neq 0 (
-    echo [FEHLER] Installation der Abhaengigkeiten fehlgeschlagen. Pruefen Sie die Ausgabe oben auf Fehler.
+    echo [FEHLER] Installation der Abhaengigkeiten fehlgeschlagen.
     goto :error_exit
+)
+
+REM --- ADB Pfad prüfen ---
+echo [INFO] Pruefe auf ADB...
+where adb >nul 2>&1
+if %errorlevel% neq 0 (
+    if exist "%ADB_PATH%\adb.exe" (
+        echo [INFO] ADB im angegebenen Pfad gefunden: "%ADB_PATH%"
+        set PATH=%PATH%;%ADB_PATH%
+    ) else (
+        echo [WARN] ADB wurde nicht gefunden. Bitte installieren Sie Android Platform-Tools oder passen Sie ADB_PATH an.
+    )
+) else (
+    echo [INFO] ADB ist im PATH vorhanden.
 )
 
 REM --- Auto-Update fuer main.py ---
@@ -74,7 +102,6 @@ echo [INFO] Versuche, die neueste 'main.py' von GitHub herunterzuladen...
 set "MAIN_PY_URL=https://raw.githubusercontent.com/fzer0x/android-control-tool-V2/main/main.py"
 set "TEMP_FILE=main.py.tmp"
 
-REM Versuche es mit curl, das in modernen Windows-Versionen enthalten ist
 curl --version >nul 2>&1
 if %errorlevel% equ 0 (
     echo [INFO] Verwende 'curl' fuer den Download.
@@ -94,7 +121,6 @@ if %errorlevel% equ 0 (
     )
 )
 
-REM Pruefe, ob die heruntergeladene Datei Inhalt hat
 for %%A in ("%TEMP_FILE%") do if %%~zA equ 0 (
     echo [WARN] Heruntergeladene Datei ist leer. Ueberspringe Update.
     del "%TEMP_FILE%"
