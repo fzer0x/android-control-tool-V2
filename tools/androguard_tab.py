@@ -171,7 +171,7 @@ class AndroguardTab(QWidget):
         self.apk_path_edit.setReadOnly(True)
         browse_btn = QPushButton("Browse...")
         browse_btn.clicked.connect(self.browse_apk)
-        analyze_btn = QPushButton("Analyze with Androguard")
+        analyze_btn = QPushButton("Decompile with Androguard")
         analyze_btn.clicked.connect(self.start_analysis)
         jadx_btn = QPushButton("Decompile with JADX")
         jadx_btn.clicked.connect(self.decompile_with_jadx)
@@ -513,7 +513,11 @@ Package: {self.apk.get_package()}\nVersion Name: {self.apk.get_androidversion_na
         xrefs_tree.setHeaderLabels(["From Class", "From Method", "Offset"])
         xrefs_layout.addWidget(xrefs_tree)
 
-        cls = next(self.analysis.find_classes(name=f"^{class_name}$", all_classes=True), None)
+        cls = None
+        for c in self.analysis.get_classes():
+            if c.name == class_name:
+                cls = c
+                break
         if not cls:
             return
 
@@ -544,7 +548,11 @@ Package: {self.apk.get_package()}\nVersion Name: {self.apk.get_androidversion_na
         if not self.analysis:
             return
 
-        cls = next(self.analysis.find_classes(name=f"^{class_name}$"), None)
+        cls = None
+        for c in self.analysis.get_classes():
+            if c.name == class_name:
+                cls = c
+                break
         if not cls:
             return
 
@@ -610,7 +618,11 @@ Package: {self.apk.get_package()}\nVersion Name: {self.apk.get_androidversion_na
         xrefs_tree.setHeaderLabels(["From Class", "From Method", "Offset"])
         xrefs_layout.addWidget(xrefs_tree)
 
-        cls = next(self.analysis.find_classes(name=f"^{class_name}$"), None)
+        cls = None
+        for c in self.analysis.get_classes():
+            if c.name == class_name:
+                cls = c
+                break
         if not cls:
             return
 
