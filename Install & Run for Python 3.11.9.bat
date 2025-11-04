@@ -97,41 +97,69 @@ if %errorlevel% neq 0 (
     echo [INFO] ADB ist im PATH vorhanden.
 )
 
-REM --- Auto-Update fuer main.py ---
-echo [INFO] Versuche, die neueste 'main.py' von GitHub herunterzuladen...
-set "MAIN_PY_URL=https://raw.githubusercontent.com/fzer0x/android-control-tool-V2/main/main.py"
-set "TEMP_FILE=main.py.tmp"
+REM =================================================================
+REM --- Auto-Update fuer main.py und androguard_tab.py mit Hash-Vergleich ---
+REM =================================================================
+echo [INFO] Pruefe auf neueste Versionen von GitHub...
 
+set "FILES_TO_UPDATE=main.py androguard_tab.py"
+
+for %%F in (%FILES_TO_UPDATE%) do call :UPDATE_FILE %%F
+
+goto :start_app
+
+REM =================================================================
+REM --- Unterprogramm: Datei aktualisieren ---
+REM =================================================================
+:UPDATE_FILE
+set "FILE_NAME=%~1"
+set "TEMP_FILE=%FILE_NAME%.tmp"
+set "FILE_URL=https://raw.githubusercontent.com/fzer0x/android-control-tool-V2/main/%FILE_NAME%"
+
+echo [INFO] Lade %FILE_NAME% von GitHub herunter...
+
+REM --- Download ---
 curl --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo [INFO] Verwende 'curl' fuer den Download.
-    curl -L -s -f -o "%TEMP_FILE%" "%MAIN_PY_URL%"
-    if %errorlevel% neq 0 (
-        echo [WARN] Download mit curl fehlgeschlagen. Ueberspringe Update.
-        if exist "%TEMP_FILE%" del "%TEMP_FILE%"
-        goto :skip_update
-    )
+    curl -L -s -f -o "%TEMP_FILE%" "%FILE_URL%" 2>nul
 ) else (
-    echo [WARN] 'curl' nicht gefunden. Versuche es mit PowerShell.
-    powershell -Command "(New-Object Net.WebClient).DownloadFile('%MAIN_PY_URL%', '%TEMP_FILE%')"
-    if %errorlevel% neq 0 (
-        echo [WARN] Download mit PowerShell fehlgeschlagen. Ueberspringe Update.
-        if exist "%TEMP_FILE%" del "%TEMP_FILE%"
-        goto :skip_update
-    )
+    powershell -Command "(New-Object Net.WebClient).DownloadFile('%FILE_URL%', '%TEMP_FILE%')" 2>nul
+)
+
+if not exist "%TEMP_FILE%" (
+    echo [WARN] Konnte %FILE_NAME% nicht herunterladen. Ueberspringe.
+    goto :eof
 )
 
 for %%A in ("%TEMP_FILE%") do if %%~zA equ 0 (
-    echo [WARN] Heruntergeladene Datei ist leer. Ueberspringe Update.
+    echo [WARN] Heruntergeladene Datei %FILE_NAME% ist leer. Ueberspringe Update.
     del "%TEMP_FILE%"
-    goto :skip_update
+    goto :eof
 )
 
-echo [INFO] Download erfolgreich. Ersetze lokale 'main.py'.
-move /Y "%TEMP_FILE%" "%SCRIPT_NAME%"
+REM --- Hash-Vergleich ---
+set "OLD_HASH="
+set "NEW_HASH="
+if exist "%FILE_NAME%" (
+    for /f "tokens=1" %%a in ('certutil -hashfile "%FILE_NAME%" SHA256 ^| find /i /v "SHA256" ^| findstr /r "^[0-9A-F]"') do set "OLD_HASH=%%a"
+)
+for /f "tokens=1" %%a in ('certutil -hashfile "%TEMP_FILE%" SHA256 ^| find /i /v "SHA256" ^| findstr /r "^[0-9A-F]"') do set "NEW_HASH=%%a"
 
-:skip_update
+if defined OLD_HASH if /i "%OLD_HASH%"=="%NEW_HASH%" (
+    echo [INFO] %FILE_NAME% ist bereits aktuell.
+    del "%TEMP_FILE%"
+    goto :eof
+)
+
+echo [UPDATE] Neue Version von %FILE_NAME% gefunden. Ersetze Datei...
+move /Y "%TEMP_FILE%" "%FILE_NAME%" >nul
+echo [INFO] %FILE_NAME% erfolgreich aktualisiert.
+goto :eof
+
+REM =================================================================
 REM --- Anwendung starten ---
+REM =================================================================
+:start_app
 echo [INFO] Starte die Anwendung (%SCRIPT_NAME%)...
 python %SCRIPT_NAME%
 
