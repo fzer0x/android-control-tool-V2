@@ -131,7 +131,7 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-It is recommended to start ACT2 via the .bat file to always receive the latest updates.
+# # It is recommended to start ACT2 via the .bat file to always receive the latest updates.
 ```bash
 Install, Update, Run for Python 3.11.9.bat
 ```
