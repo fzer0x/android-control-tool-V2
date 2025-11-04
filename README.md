@@ -131,7 +131,7 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-Or use auto OneClick install & Run .bat
+Or use OneClick auto install & Run .bat
 ```bash
 Install, Update, Run for Python 3.11.9.bat
 ```
