@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 # Android Control Tool V2 (ACT)
 
-# Dont forget to drop a ⭐️
+# Dont forget to drop a ⭐️ Thank you!
 
 A cross-platform PC tool for controlling, managing rooted Android devices — built in **Python** with **ADB** integration.
 
