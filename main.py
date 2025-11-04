@@ -17,7 +17,7 @@ from PyQt6.QtGui import (QIcon, QFont, QPixmap, QColor, QPalette, QAction, QText
                          QTextCursor, QStandardItemModel, QStandardItem)
 from PyQt6.QtCore import (Qt, QSize, QTimer, QProcess, QSettings, QThread,
                           pyqtSignal, QObject, QByteArray, QDateTime, QStandardPaths)
-from tools.androguard_tab import AndroguardTab
+from androguard_tab import AndroguardTab
 from functools import partial
 import webbrowser
 import json
@@ -9870,3 +9870,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
