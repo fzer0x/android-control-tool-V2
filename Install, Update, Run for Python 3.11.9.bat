@@ -2,131 +2,131 @@
 setlocal
 
 REM =================================================================
-REM  Run-Skript fuer Android Control Tool (Entwicklung)
-REM  Richtet die Umgebung ein, aktualisiert pip und startet die Anwendung.
+REM  Run script for Android Control Tool (Development)
+REM  Sets up the environment, updates pip, and starts the application.
 REM =================================================================
 
-echo [INFO] Starte Android Control Tool im Entwicklungsmodus...
+echo [INFO] Starting Android Control Tool in development mode...
 
-REM --- Konfiguration ---
+REM --- Configuration ---
 set SCRIPT_NAME=main.py
 set VENV_DIR=venv
-REM Optional: Pfad zu ADB hier definieren, falls nicht im PATH
+REM Optional: define path to ADB here if it’s not in PATH
 set "ADB_PATH=C:\Android\platform-tools"
 
-REM --- Python-Pruefung ---
-echo [INFO] Suche nach einer kompatiblen Python-Installation (3.8+)...
+REM --- Python check ---
+echo [INFO] Searching for a compatible Python installation (3.8+)...
 set PYTHON_EXE=
 
-echo [INFO] Pruefe auf Python 3.11...
+echo [INFO] Checking for Python 3.11...
 py -3.11 --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_EXE=py -3.11
-    echo [INFO] Python 3.11 gefunden.
+    echo [INFO] Found Python 3.11.
 )
 
 if not defined PYTHON_EXE (
-    echo [WARN] Keine spezifische Python-Version via 'py' launcher gefunden. Versuche generisches 'python'.
+    echo [WARN] No specific Python version found via 'py' launcher. Trying generic 'python'.
     python --version >nul 2>&1
     if %errorlevel% equ 0 (
         set PYTHON_EXE=python
-        echo [INFO] Generisches 'python' gefunden.
+        echo [INFO] Found generic 'python'.
     ) else (
-        echo [FEHLER] Python wurde nicht im PATH gefunden. Bitte installieren Sie Python 3.8+ und fuegen Sie es zum PATH hinzu.
+        echo [ERROR] Python not found in PATH. Please install Python 3.8+ and add it to PATH.
         goto :error_exit
     )
 )
 
-echo [INFO] Verwende '%PYTHON_EXE%' zum Ausfuehren.
+echo [INFO] Using '%PYTHON_EXE%' for execution.
 
-REM --- PIP-Upgrade global ---
-echo [INFO] Aktualisiere systemweites pip...
+REM --- Global pip upgrade ---
+echo [INFO] Updating system-wide pip...
 %PYTHON_EXE% -m pip install --upgrade pip
 if %errorlevel% neq 0 (
-    echo [WARN] Konnte systemweites pip nicht aktualisieren.
+    echo [WARN] Could not update system-wide pip.
 ) else (
-    echo [INFO] Systemweites pip erfolgreich aktualisiert.
+    echo [INFO] Successfully updated system-wide pip.
 )
 
-REM --- Virtuelle Umgebung einrichten ---
+REM --- Setup virtual environment ---
 if not exist "%VENV_DIR%\" (
-    echo [INFO] Erstelle virtuelle Umgebung in '%VENV_DIR%'...
+    echo [INFO] Creating virtual environment in '%VENV_DIR%'...
     %PYTHON_EXE% -m venv %VENV_DIR%
     if %errorlevel% neq 0 (
-        echo [FEHLER] Konnte die virtuelle Umgebung nicht erstellen.
+        echo [ERROR] Could not create virtual environment.
         goto :error_exit
     )
 )
 
-REM --- Virtuelle Umgebung aktivieren ---
-echo [INFO] Aktiviere virtuelle Umgebung...
+REM --- Activate virtual environment ---
+echo [INFO] Activating virtual environment...
 call "%VENV_DIR%\Scripts\activate.bat"
 if not defined VIRTUAL_ENV (
-    echo [FEHLER] Konnte die virtuelle Umgebung nicht aktivieren.
+    echo [ERROR] Could not activate virtual environment.
     goto :error_exit
 )
 
 REM =================================================================
-REM --- Auto-Update fuer main.py, androguard_tab.py, requirements.txt ---
+REM --- Auto-update for main.py, androguard_tab.py, requirements.txt ---
 REM =================================================================
-echo [INFO] Pruefe auf neueste Versionen von GitHub...
+echo [INFO] Checking for latest versions from GitHub...
 
 set "FILES_TO_UPDATE=main.py androguard_tab.py requirements.txt"
 
 for %%F in (%FILES_TO_UPDATE%) do call :UPDATE_FILE %%F
 
-REM --- PIP im venv updaten ---
-echo [INFO] Aktualisiere pip innerhalb der virtuellen Umgebung...
+REM --- Update pip inside venv ---
+echo [INFO] Updating pip inside virtual environment...
 python -m pip install --upgrade pip
 if %errorlevel% neq 0 (
-    echo [WARN] Konnte pip im venv nicht aktualisieren.
+    echo [WARN] Could not update pip in venv.
 ) else (
-    echo [INFO] pip im venv erfolgreich aktualisiert.
+    echo [INFO] Successfully updated pip in venv.
 )
 
-REM --- Abhaengigkeiten installieren ---
-echo [INFO] Installiere Abhaengigkeiten aus requirements.txt...
+REM --- Install dependencies ---
+echo [INFO] Installing dependencies from requirements.txt...
 python -m pip install -r requirements.txt
 if %errorlevel% neq 0 (
-    echo [FEHLER] Installation der Abhaengigkeiten fehlgeschlagen.
+    echo [ERROR] Failed to install dependencies.
     goto :error_exit
 )
 
-REM --- ADB Pfad prüfen ---
-echo [INFO] Pruefe auf ADB...
+REM --- Check ADB path ---
+echo [INFO] Checking for ADB...
 where adb >nul 2>&1
 if %errorlevel% neq 0 (
     if exist "%ADB_PATH%\adb.exe" (
-        echo [INFO] ADB im angegebenen Pfad gefunden: "%ADB_PATH%"
+        echo [INFO] Found ADB at specified path: "%ADB_PATH%"
         set PATH=%PATH%;%ADB_PATH%
     ) else (
-        echo [WARN] ADB wurde nicht gefunden. Bitte installieren Sie Android Platform-Tools oder passen Sie ADB_PATH an.
+        echo [WARN] ADB not found. Please install Android Platform-Tools manually or automatically in the Settings tab.
     )
 ) else (
-    echo [INFO] ADB ist im PATH vorhanden.
+    echo [INFO] ADB is present in PATH.
 )
 
 REM =================================================================
-REM --- Anwendung starten ---
+REM --- Start application ---
 REM =================================================================
-echo [INFO] Starte die Anwendung (%SCRIPT_NAME%)...
+echo [INFO] Starting application (%SCRIPT_NAME%)...
 python %SCRIPT_NAME%
 
 endlocal
 echo.
-echo [INFO] Anwendung wurde beendet.
+echo [INFO] Application has exited.
 pause
 goto :eof
 
 REM =================================================================
-REM --- Unterprogramm: Datei aktualisieren mit Hashvergleich ---
+REM --- Subroutine: Update file with hash comparison ---
 REM =================================================================
 :UPDATE_FILE
 set "FILE_NAME=%~1"
 set "TEMP_FILE=%FILE_NAME%.tmp"
 set "FILE_URL=https://raw.githubusercontent.com/fzer0x/android-control-tool-V2/main/%FILE_NAME%"
 
-echo [INFO] Lade %FILE_NAME% von GitHub herunter...
+echo [INFO] Downloading %FILE_NAME% from GitHub...
 
 REM --- Download ---
 curl --version >nul 2>&1
@@ -137,17 +137,17 @@ if %errorlevel% equ 0 (
 )
 
 if not exist "%TEMP_FILE%" (
-    echo [WARN] Konnte %FILE_NAME% nicht herunterladen. Ueberspringe.
+    echo [WARN] Could not download %FILE_NAME%. Skipping.
     goto :eof
 )
 
 for %%A in ("%TEMP_FILE%") do if %%~zA equ 0 (
-    echo [WARN] Heruntergeladene Datei %FILE_NAME% ist leer. Ueberspringe Update.
+    echo [WARN] Downloaded file %FILE_NAME% is empty. Skipping update.
     del "%TEMP_FILE%"
     goto :eof
 )
 
-REM --- Hash-Vergleich ---
+REM --- Hash comparison ---
 set "OLD_HASH="
 set "NEW_HASH="
 if exist "%FILE_NAME%" (
@@ -156,18 +156,18 @@ if exist "%FILE_NAME%" (
 for /f "tokens=1" %%a in ('certutil -hashfile "%TEMP_FILE%" SHA256 ^| find /i /v "SHA256" ^| findstr /r "^[0-9A-F]"') do set "NEW_HASH=%%a"
 
 if defined OLD_HASH if /i "%OLD_HASH%"=="%NEW_HASH%" (
-    echo [INFO] %FILE_NAME% ist bereits aktuell.
+    echo [INFO] %FILE_NAME% is already up to date.
     del "%TEMP_FILE%"
     goto :eof
 )
 
-echo [UPDATE] Neue Version von %FILE_NAME% gefunden. Ersetze Datei...
+echo [UPDATE] New version of %FILE_NAME% found. Replacing file...
 move /Y "%TEMP_FILE%" "%FILE_NAME%" >nul
-echo [INFO] %FILE_NAME% erfolgreich aktualisiert.
+echo [INFO] Successfully updated %FILE_NAME%.
 goto :eof
 
 :error_exit
 echo.
-echo [FEHLER] Das Skript wurde aufgrund eines Fehlers abgebrochen.
+echo [ERROR] The script was aborted due to an error.
 pause
 endlocal
