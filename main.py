@@ -33,6 +33,29 @@ import shutil
 import zipfile
 import tempfile
 
+# Set ANDROID_SDK_ROOT if not already set
+# Prioritize existing ANDROID_SDK_ROOT environment variable if it points to a valid SDK.
+# A valid SDK is considered to have a 'platform-tools' subdirectory.
+# If you have a full Android SDK installed elsewhere, set the ANDROID_SDK_ROOT
+# environment variable to its path (e.g., C:\Users\YourUser\AppData\Local\Android\Sdk).
+# This will allow the application to use your existing SDK.
+sdk_root_path = None
+if "ANDROID_SDK_ROOT" in os.environ:
+    existing_sdk_root = os.environ["ANDROID_SDK_ROOT"]
+    if os.path.isdir(os.path.join(existing_sdk_root, "platform-tools")):
+        sdk_root_path = existing_sdk_root
+        print(f"INFO: Using existing ANDROID_SDK_ROOT from environment: {sdk_root_path}")
+    else:
+        print(f"WARNING: Existing ANDROID_SDK_ROOT environment variable points to an invalid SDK: {existing_sdk_root}. Falling back to local tools/sdk.")
+
+if sdk_root_path is None:
+    sdk_root_path = os.path.join(os.getcwd(), "tools", "sdk")
+    if not os.path.isdir(os.path.join(sdk_root_path, "platform-tools")):
+        print(f"WARNING: Local SDK path {sdk_root_path} does not contain platform-tools. Emulator might not function correctly.")
+    os.environ["ANDROID_SDK_ROOT"] = sdk_root_path
+    print(f"INFO: ANDROID_SDK_ROOT set to local path: {sdk_root_path}")
+
+
 import logging
 # Constants
 VERSION = "2.1.1"
@@ -6040,8 +6063,8 @@ class RootToolsTab(QWidget):
 
         start_emulator_layout = QHBoxLayout()
         self.writable_system_check = QCheckBox("-writable-system")
+        self.writable_system_check.setChecked(False)
         self.writable_system_check.setToolTip("Startet den Emulator mit einer beschreibbaren Systempartition (erforderlich für Root).")
-        self.writable_system_check.setChecked(True)
         self.start_emulator_btn = QPushButton("Start Emulator")
         self.start_emulator_btn.clicked.connect(self.start_selected_emulator)
         start_emulator_layout.addWidget(self.writable_system_check)
@@ -9870,4 +9893,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
