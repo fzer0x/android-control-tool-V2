@@ -13,11 +13,11 @@ A cross-platform PC tool for controlling, managing rooted Android devices — bu
 ![UACT Screenshot](screenshot3.png)
 ![UACT Screenshot](screenshot4.png)
 
-# 📦 Changelog [2.1.1] [04.11.2025]
+# 📦 Changelog [2.1.1] 2025-11-04
 - Bug and install Fix
 - move androguard_tab.py to root
 
-# 📦 Changelog [2.1.0] [03.11.2025]
+# 📦 Changelog [2.1.0] 2025-11-03
 - Add APK Analysis Tab
 - Add Androguard + Auto Installer
 - Add JADX integration + Auto Installer
