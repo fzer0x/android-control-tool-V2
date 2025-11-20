@@ -18,6 +18,7 @@ from PyQt6.QtGui import (QIcon, QFont, QPixmap, QColor, QPalette, QAction, QText
 from PyQt6.QtCore import (Qt, QSize, QTimer, QProcess, QSettings, QThread,
                           pyqtSignal, QObject, QByteArray, QDateTime, QStandardPaths)
 from androguard_tab import AndroguardTab
+from smartphone_tab import SmartphoneTab
 from functools import partial
 import webbrowser
 import json
@@ -9427,7 +9428,11 @@ class MainWindow(QMainWindow):
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
 
         # Add tabs
-        self.tab_widget.addTab(DeviceControlTab(self.device_manager), "Device Control")
+        self.device_control_tab = DeviceControlTab(self.device_manager)
+        self.tab_widget.addTab(self.device_control_tab, "Device Control")
+
+        self.smartphone_tab = SmartphoneTab(self.device_manager)
+        self.tab_widget.addTab(self.smartphone_tab, "Smartphone")
         self.tab_widget.addTab(FileExplorerTab(self.device_manager, self.file_manager), "File Explorer")
         self.tab_widget.addTab(PackageManagerTab(self.device_manager, self.package_manager), "Package Manager")
         self.tab_widget.addTab(BackupRestoreTab(self.device_manager, self.backup_manager), "Backup/Restore")
@@ -9445,7 +9450,7 @@ class MainWindow(QMainWindow):
         
         main_layout.addWidget(self.tab_widget)
 
-        self.file_explorer_tab = self.tab_widget.widget(1)
+        self.file_explorer_tab = self.tab_widget.widget(2)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.file_explorer_tab.preview_dock)
 
         self.status_bar = QStatusBar()
