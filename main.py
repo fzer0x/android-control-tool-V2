@@ -18,7 +18,6 @@ from PyQt6.QtGui import (QIcon, QFont, QPixmap, QColor, QPalette, QAction, QText
 from PyQt6.QtCore import (Qt, QSize, QTimer, QProcess, QSettings, QThread,
                           pyqtSignal, QObject, QByteArray, QDateTime, QStandardPaths)
 from androguard_tab import AndroguardTab
-# from smartphone_tab import SmartphoneTab
 from functools import partial
 import webbrowser
 import json
@@ -9431,15 +9430,8 @@ class MainWindow(QMainWindow):
         self.device_control_tab = DeviceControlTab(self.device_manager)
         self.tab_widget.addTab(self.device_control_tab, "Device Control")
 
-        # Placeholder for SmartphoneTab
-        self.smartphone_tab = QWidget()
-        smartphone_layout = QVBoxLayout()
-        placeholder_label = QLabel("Smartphone Tab is currently not available.")
-        placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        smartphone_layout.addWidget(placeholder_label)
-        self.smartphone_tab.setLayout(smartphone_layout)
-        self.tab_widget.addTab(self.smartphone_tab, "Smartphone")
-        self.tab_widget.addTab(FileExplorerTab(self.device_manager, self.file_manager), "File Explorer")
+        self.file_explorer_tab = FileExplorerTab(self.device_manager, self.file_manager)
+        self.tab_widget.addTab(self.file_explorer_tab, "File Explorer")
         self.tab_widget.addTab(PackageManagerTab(self.device_manager, self.package_manager), "Package Manager")
         self.tab_widget.addTab(BackupRestoreTab(self.device_manager, self.backup_manager), "Backup/Restore")
         self.tab_widget.addTab(LogcatTab(self.device_manager, self.logcat_manager), "Logcat")
@@ -9456,7 +9448,6 @@ class MainWindow(QMainWindow):
         
         main_layout.addWidget(self.tab_widget)
 
-        self.file_explorer_tab = self.tab_widget.widget(2)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.file_explorer_tab.preview_dock)
 
         self.status_bar = QStatusBar()
